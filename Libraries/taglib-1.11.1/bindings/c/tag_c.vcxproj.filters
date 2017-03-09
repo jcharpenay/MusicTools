@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\Workspace\MusicTools\Libraries\taglib-1.11.1\bindings\c\tag_c.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="E:\Workspace\MusicTools\Libraries\taglib-1.11.1\bindings\c\tag_c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\Workspace\MusicTools\Libraries\taglib-1.11.1\bindings\c\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{FFBE9132-792E-3D75-96E0-54F7B568A2C7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{223A16AD-AF04-37F6-8541-583888B4CECC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Fichiers de ressources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Fichiers">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Fichiers\FileSystem">
+      <UniqueIdentifier>{f2f2a7f2-f493-4170-9b39-c134f4d798b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers\Base">
+      <UniqueIdentifier>{af16173b-d44e-419a-83f8-657837a96a08}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Console.cpp">
+      <Filter>Fichiers</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Fichiers</Filter>
+    </ClCompile>
+    <ClCompile Include="DriveExplorer.cpp">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="PortableDeviceExplorer.cpp">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer.cpp">
+      <Filter>Fichiers\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="String.cpp">
+      <Filter>Fichiers\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="File.cpp">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="MusicTools.cpp">
+      <Filter>Fichiers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Precompiled.h">
+      <Filter>Fichiers</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>Fichiers</Filter>
+    </ClInclude>
+    <ClInclude Include="DriveExplorer.h">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="PortableDeviceExplorer.h">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Array.h">
+      <Filter>Fichiers\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffer.h">
+      <Filter>Fichiers\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Sort.h">
+      <Filter>Fichiers\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="String.h">
+      <Filter>Fichiers\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="File.h">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="RefCounted.h">
+      <Filter>Fichiers\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="MusicTools.h">
+      <Filter>Fichiers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Array.inl">
+      <Filter>Fichiers\Base</Filter>
+    </None>
+    <None Include="Sort.inl">
+      <Filter>Fichiers\Base</Filter>
+    </None>
+  </ItemGroup>
+</Project>
