@@ -97,10 +97,44 @@ void String::AddPath( const String & _other ) {
 	}
 }
 
-const wchar_t * String::GetExtension() const {
-	for ( int index = m_length - 2; index >= 0; index-- ) {
-		if ( m_data[ index ] == TEXT( '.' ) ) {
+void String::StripPath() {
+	const wchar_t * fileName = GetFileName();
+	if ( fileName != m_data ) {
+		const unsigned int fileNameIndex = static_cast< unsigned int >( fileName - m_data );
+		for ( unsigned int index = 0; index < fileNameIndex; index++ ) {
+			m_data[ index ] = m_data[ fileNameIndex + index ];
+		}
+		m_length -= fileNameIndex;
+	}
+}
+
+void String::StripFileExtension() {
+	const wchar_t * fileExtension = GetFileExtension();
+	if ( fileExtension != TEXT( "" ) ) {
+		const unsigned int dotIndex = static_cast< unsigned int >( fileExtension - m_data ) - 1;
+		m_data[ dotIndex ] = '\0';
+		m_length = dotIndex;
+	}
+}
+
+const wchar_t * String::GetFileName() const {
+	for ( int index = m_length - 1; index >= 0; index-- ) {
+		const wchar_t character = m_data[ index ];
+		if ( character == TEXT( '\\' ) ) {
 			return m_data + index + 1;
+		}
+	}
+
+	return m_data;
+}
+
+const wchar_t * String::GetFileExtension() const {
+	for ( int index = m_length - 1; index >= 0; index-- ) {
+		const wchar_t character = m_data[ index ];
+		if ( character == TEXT( '.' ) ) {
+			return m_data + index + 1;
+		} else if ( character == TEXT( '\\' ) ) {
+			break;
 		}
 	}
 

@@ -69,13 +69,19 @@ namespace FileSystem {
 
 	class Explorer : public RefCounted {
 	public:
+		virtual void GetID( FolderID & _folderID ) const = 0;
 		virtual void GetFolderID( unsigned int _index, FolderID & _folderID ) const = 0;
 		virtual void GetFileID( unsigned int _index, FileID & _fileID ) const = 0;
 
 		virtual Explorer * ExploreFolder( const FolderID & _folderID ) const = 0;
+		virtual bool CreateFolder( const FolderID & _parentFolderID, const String & _folderName, FolderID & _folderID ) const = 0;
+		virtual bool DeleteFolder( const FolderID & _folderID ) const = 0;
 		virtual File * ReadFile( const FileID & _fileID ) const = 0;
+		virtual bool CreateFile( const FolderID & _parentFolderID, const String & _fileName, const File & _file, FileID & _fileID ) const = 0;
 		virtual bool WriteFile( const FileID & _fileID, const File & _file ) const = 0;
 		virtual bool DeleteFile( const FileID & _fileID ) const = 0;
+		virtual bool IsFileReadOnly( const FileID & _fileID ) const = 0;
+		virtual bool SetFileReadOnly( const FileID & _fileID, bool _readOnly ) const = 0;
 		virtual bool FetchAudioFileTags( const FileID & _fileID, AudioFileTags & _tags ) const = 0;
 
 		const String & GetPath() const					{ return m_path; }
@@ -103,8 +109,6 @@ namespace FileSystem {
 
 		const Explorer *	m_sourceExplorer;
 		const Explorer *	m_destinationExplorer;
-		Array< String >		m_audioFileExtensions;
-		Array< String >		m_playlistFileExtensions;
 		PlaylistComparison	m_playlistComparison;
 		bool				m_compareFolders;
 		bool				m_compareFiles;
@@ -115,26 +119,28 @@ namespace FileSystem {
 		bool				m_printTagMismatch;
 
 		ComparePathsInput();
-
-		bool IsAudioFile( const wchar_t * _extension ) const;
-		bool IsPlaylistFile( const wchar_t * _extension ) const;
 	};
 
 	class ComparePathsOutput {
 	public:
-		Array< FolderID >	m_missingFolders;
-		Array< FolderID >	m_extraFolders;
-		Array< FileID >		m_missingFiles;
-		Array< FileID >		m_extraFiles;
-		Array< FileID >		m_differentFiles;
-		unsigned int		m_audioFileTagsReadFromSource;
-		unsigned int		m_audioFileTagsReadFromDestination;
-		Array< String >		m_expectedPlaylists;
+		class MissingFolder {
+		public:
+			FolderID	m_sourceFolderID;
+			FolderID	m_destinationParentFolderID;
+		};
+
+		Array< MissingFolder >	m_missingFolders;
+		Array< FolderID >		m_extraFolders;
+		Array< FileID >			m_missingFiles;
+		Array< FileID >			m_extraFiles;
+		Array< FileID >			m_differentFiles;
+		unsigned int			m_audioFileTagsReadFromSource;
+		unsigned int			m_audioFileTagsReadFromDestination;
+		Array< String >			m_expectedPlaylists;
 
 		ComparePathsOutput();
 
 		void Print( const ComparePathsInput & _input ) const;
-		void FixDifferentPlaylistFiles( const ComparePathsInput & _input );
 		bool IsEmpty() const;
 
 	private:
@@ -147,7 +153,13 @@ namespace FileSystem {
 	void PrintDrives( const Array< Drive > & _drives );
 	void PrintPortableDevices( const Array< PortableDevice > & _devices );
 
-	Explorer * ExploreDriveOrPortableDevice( const Array< Drive > & _drives, const Array< PortableDevice > & _devices, const String & _input );
-
 	void ComparePaths( const ComparePathsInput & _input, ComparePathsOutput & _output );
+	void FixMissingFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output );
+	void FixMissingFolder( const ComparePathsInput & _input, const ComparePathsOutput::MissingFolder & _missingFolder );
+	void FixDifferentPlaylistFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output );
+
+	bool IsAudioFile( const wchar_t * _extension );
+	bool IsPlaylistFile( const wchar_t * _extension );
+	GUID GetAudioFileFormat( const wchar_t * _extension );
+	GUID GetPlaylistFileFormat( const wchar_t * _extension );
 }

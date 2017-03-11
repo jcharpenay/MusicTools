@@ -21,7 +21,10 @@ public:
 
 	void Add( const wchar_t * _text, unsigned int _length );
 	void AddPath( const String & _other );
-	const wchar_t * GetExtension() const;
+	void StripPath();
+	void StripFileExtension();
+	const wchar_t * GetFileName() const;
+	const wchar_t * GetFileExtension() const;
 
 	// Allocation
 	void EnsureAllocated( unsigned int _size );

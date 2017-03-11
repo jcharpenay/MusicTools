@@ -56,7 +56,7 @@ public:
 	const T * operator->() const	{ return m_ptr; }
 	T * operator->()				{ return m_ptr; }
 
-private:
+protected:
 	T * m_ptr;
 
 	void AddRefIfNotNull() {
@@ -72,4 +72,24 @@ private:
 	}
 };
 
-template< class T > using ComPtr = RefCountedPtr< T >;
+template< class T > class ComPtr : public RefCountedPtr< T > {
+public:
+	// Constructor
+	ComPtr() {}
+	ComPtr( T * _ptr ) : RefCountedPtr( _ptr ) {}
+	ComPtr( const ComPtr< T > & _other ) : RefCountedPtr( _other ) {}
+
+	// Operations
+	void operator=( const ComPtr< T > & _other ) {
+		RefCountedPtr< T >::operator=( _other );
+	}
+
+	template< class U > HRESULT As( ComPtr< U > & _other ) const {
+		if ( m_ptr != NULL ) {
+			_other = NULL;
+			return m_ptr->QueryInterface( __uuidof( IPortableDeviceContent2 ), reinterpret_cast< void ** >( &_other ) );
+		} else {
+			return E_POINTER;
+		}
+	}
+};

@@ -1,7 +1,32 @@
 #include "Precompiled.h"
 #include "Array.h"
 #include "Console.h"
+#include "DriveExplorer.h"
 #include "MusicTools.h"
+#include "PortableDeviceExplorer.h"
+
+FileSystem::Explorer * MusicTools::ExploreDriveOrPortableDevice( const Array< FileSystem::Drive > & _drives, const Array< FileSystem::PortableDevice > & _devices, const String & _input ) {
+	if ( _input[ 0 ] >= TEXT( '0' ) && _input[ 0 ] <= TEXT( '9' ) ) {
+		const unsigned int deviceIndex = _wtoi( _input );
+		if ( deviceIndex < _devices.NumItems() ) {
+			return new FileSystem::PortableDeviceExplorer( _devices[ deviceIndex ] );
+		}
+	} else {
+		wchar_t driveLetter = _input[ 0 ];
+		if ( driveLetter >= 'a' && driveLetter <= 'z' ) {
+			driveLetter = 'A' + ( driveLetter - 'a' );
+		}
+
+		for ( unsigned int driveIndex = 0; driveIndex < _drives.NumItems(); driveIndex++ ) {
+			const FileSystem::Drive & drive = _drives[ driveIndex ];
+			if ( driveLetter == drive.m_path[ 0 ] ) {
+				return new FileSystem::DriveExplorer( drive );
+			}
+		}
+	}
+
+	return NULL;
+}
 
 void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explorer > & _explorer, RefCountedPtr< FileSystem::Explorer > & _musicExplorer, RefCountedPtr< FileSystem::Explorer > & _playlistExplorer, String & _musicExtension ) {
 	RefCountedPtr< FileSystem::Explorer > current = _explorer;
@@ -62,8 +87,8 @@ void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explore
 
 				for ( unsigned int fileIndex = 0; fileIndex < fileNames.NumItems(); fileIndex++ ) {
 					const String & fileName = fileNames[ fileIndex ];
-					const wchar_t * extension = fileName.GetExtension();
-					if ( String::Compare( extension, TEXT( "m3u" ) ) == 0 || String::Compare( extension, TEXT( "m3u8" ) ) == 0 ) {
+					const wchar_t * fileExtension = fileName.GetFileExtension();
+					if ( String::Compare( fileExtension, TEXT( "m3u" ) ) == 0 || String::Compare( fileExtension, TEXT( "m3u8" ) ) == 0 ) {
 						findPlaylistsFolder = false;
 						break;
 					}
@@ -75,9 +100,9 @@ void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explore
 				if ( folderNames.IsEmpty() ) {
 					for ( unsigned int fileIndex = 0; fileIndex < fileNames.NumItems(); fileIndex++ ) {
 						const String & fileName = fileNames[ fileIndex ];
-						const wchar_t * extension = fileName.GetExtension();
-						if ( String::Compare( extension, TEXT( "flac" ) ) == 0 || String::Compare( extension, TEXT( "mp3" ) ) == 0 ) {
-							_musicExtension = extension;
+						const wchar_t * fileExtension = fileName.GetFileExtension();
+						if ( String::Compare( fileExtension, TEXT( "flac" ) ) == 0 || String::Compare( fileExtension, TEXT( "mp3" ) ) == 0 ) {
+							_musicExtension = fileExtension;
 							findMusicExtension = false;
 							break;
 						}

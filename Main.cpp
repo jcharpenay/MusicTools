@@ -37,7 +37,7 @@ int wmain( int argc, wchar_t * argv[] ) {
 			String source;
 			Console::AskString( TEXT( "Source: " ), source );
 
-			RefCountedPtr< FileSystem::Explorer > sourceExplorer = FileSystem::ExploreDriveOrPortableDevice( drives, devices, source );
+			RefCountedPtr< FileSystem::Explorer > sourceExplorer = MusicTools::ExploreDriveOrPortableDevice( drives, devices, source );
 			if ( sourceExplorer != NULL ) {
 				MusicTools::FindMusicAndPlaylists( sourceExplorer, sourceMusicExplorer, sourcePlaylistsExplorer, sourceMusicExtension );
 			}
@@ -49,7 +49,7 @@ int wmain( int argc, wchar_t * argv[] ) {
 				String destination;
 				Console::AskString( TEXT( "Destination: " ), destination );
 
-				RefCountedPtr< FileSystem::Explorer > destinationExplorer = FileSystem::ExploreDriveOrPortableDevice( drives, devices, destination );
+				RefCountedPtr< FileSystem::Explorer > destinationExplorer = MusicTools::ExploreDriveOrPortableDevice( drives, devices, destination );
 				if ( destinationExplorer != NULL ) {
 					MusicTools::FindMusicAndPlaylists( destinationExplorer, destinationMusicExplorer, destinationPlaylistsExplorer, destinationMusicExtension );
 				}
@@ -69,8 +69,6 @@ int wmain( int argc, wchar_t * argv[] ) {
 
 					compareMusicInput.m_sourceExplorer = sourceMusicExplorer;
 					compareMusicInput.m_destinationExplorer = destinationMusicExplorer;
-					compareMusicInput.m_audioFileExtensions.Add( TEXT( "flac" ) );
-					compareMusicInput.m_audioFileExtensions.Add( TEXT( "mp3" ) );
 					compareMusicInput.m_compareFolders = true;
 					compareMusicInput.m_compareFiles = true;
 					compareMusicInput.m_compareAudioFileTags = compareAudioFileTags;
@@ -80,6 +78,11 @@ int wmain( int argc, wchar_t * argv[] ) {
 
 					FileSystem::ComparePaths( compareMusicInput, compareMusicOutput );
 					compareMusicOutput.Print( compareMusicInput );
+
+					// Ask for action
+					if ( !compareMusicOutput.m_missingFolders.IsEmpty() && sourceMusicExtension == destinationMusicExtension && Console::AskBool( TEXT( "Fix missing folders? (y/n) " ) ) ) {
+						FileSystem::FixMissingFolders( compareMusicInput, compareMusicOutput );
+					}
 				}
 
 				if ( sourcePlaylistsExplorer != NULL && destinationPlaylistsExplorer != NULL ) {
@@ -97,8 +100,6 @@ int wmain( int argc, wchar_t * argv[] ) {
 
 						comparePlaylistsInput.m_sourceExplorer = sourcePlaylistsExplorer;
 						comparePlaylistsInput.m_destinationExplorer = destinationPlaylistsExplorer;
-						comparePlaylistsInput.m_playlistFileExtensions.Add( TEXT( "m3u" ) );
-						comparePlaylistsInput.m_playlistFileExtensions.Add( TEXT( "m3u8" ) );
 						comparePlaylistsInput.m_playlistComparison.m_sourceMusicPath = sourcePlaylistsToMusicPath;
 						comparePlaylistsInput.m_playlistComparison.m_destinationMusicPath = destinationPlaylistsToMusicPath;
 						comparePlaylistsInput.m_playlistComparison.m_destinationMusicExtension = destinationMusicExtension;
@@ -110,7 +111,7 @@ int wmain( int argc, wchar_t * argv[] ) {
 
 						// Ask for action
 						if ( !comparePlaylistsOutput.m_differentFiles.IsEmpty() && Console::AskBool( TEXT( "Fix different files? (y/n) " ) ) ) {
-							comparePlaylistsOutput.FixDifferentPlaylistFiles( comparePlaylistsInput );
+							FileSystem::FixDifferentPlaylistFiles( comparePlaylistsInput, comparePlaylistsOutput );
 						}
 					} else {
 						// Nothing else to display, directly exit

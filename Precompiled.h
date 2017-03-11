@@ -10,6 +10,8 @@
 #include <Objbase.h>			// COM
 #include <PortableDevice.h>		// WPD
 #include <PortableDeviceApi.h>	// WPD
+#include <propvarutil.h>		// For InitPropVariantFromString
+#include <shellapi.h>			// For SHFileOperation
 #include <stdarg.h>
 #include <stdio.h>
 #include <wchar.h>

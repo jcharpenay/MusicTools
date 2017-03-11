@@ -1,10 +1,8 @@
 #include "Precompiled.h"
 #include "Console.h"
-#include "DriveExplorer.h"
 #include "File.h"
 #include "FileSystem.h"
 #include "MusicTools.h"
-#include "PortableDeviceExplorer.h"
 
 bool FileSystem::AudioFileTags::operator==( const AudioFileTags & _other ) const {
 	const unsigned int relevantTagsMask = m_relevantTagsMask & _other.m_relevantTagsMask;
@@ -60,26 +58,6 @@ FileSystem::ComparePathsInput::ComparePathsInput() :
 	m_printTagMismatch( false ) {
 }
 
-bool FileSystem::ComparePathsInput::IsAudioFile( const wchar_t * _extension ) const {
-	for ( unsigned int extensionIndex = 0; extensionIndex < m_audioFileExtensions.NumItems(); extensionIndex++ ) {
-		if ( m_audioFileExtensions[ extensionIndex ] == _extension ) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool FileSystem::ComparePathsInput::IsPlaylistFile( const wchar_t * _extension ) const {
-	for ( unsigned int extensionIndex = 0; extensionIndex < m_playlistFileExtensions.NumItems(); extensionIndex++ ) {
-		if ( m_playlistFileExtensions[ extensionIndex ] == _extension ) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 FileSystem::ComparePathsOutput::ComparePathsOutput() :
 	m_audioFileTagsReadFromSource( 0 ),
 	m_audioFileTagsReadFromDestination( 0 ) {
@@ -95,7 +73,7 @@ void FileSystem::ComparePathsOutput::Print( const ComparePathsInput & _input ) c
 		if ( !m_missingFolders.IsEmpty() ) {
 			Printf( TEXT( "Missing folders in \"%s\":\n" ), destinationPath.AsChar() );
 			for ( unsigned int index = 0; index < m_missingFolders.NumItems(); index++ ) {
-				Printf( TEXT( "\t\"%s\"\n" ), m_missingFolders[ index ].GetPath().AsChar() + sourcePath.Length() + 1 );
+				Printf( TEXT( "\t\"%s\"\n" ), m_missingFolders[ index ].m_sourceFolderID.GetPath().AsChar() + sourcePath.Length() + 1 );
 			}
 		}
 
@@ -136,28 +114,6 @@ void FileSystem::ComparePathsOutput::Print( const ComparePathsInput & _input ) c
 			if ( m_audioFileTagsReadFromDestination != AudioFileTags::ALL ) {
 				Printf( TEXT( "Audio file tags not successfully read from destination: " ) );
 				PrintAudioFileTagsNotRead( m_audioFileTagsReadFromDestination );
-			}
-		}
-	}
-}
-
-void FileSystem::ComparePathsOutput::FixDifferentPlaylistFiles( const ComparePathsInput & _input ) {
-	unsigned int playlistIndex = 0;
-
-	for ( unsigned int index = 0; index < m_differentFiles.NumItems(); index++ ) {
-		const FileSystem::FileID & fileID = m_differentFiles[ index ];
-		const wchar_t * fileExtension = fileID.GetPath().GetExtension();
-
-		if ( _input.IsPlaylistFile( fileExtension ) ) {
-			const String & expectedPlaylist = m_expectedPlaylists[ playlistIndex++ ];
-								
-			TextFile file;
-			file.Set( TextFile::UTF_8, expectedPlaylist );
-
-			if ( _input.m_destinationExplorer->WriteFile( fileID, file ) ) {
-				Printf( TEXT( "Fixed playlist file \"%s\"\n" ), fileID.GetPath().AsChar() );
-			} else {
-				Printf( TEXT( "Couldn't write file \"%s\"\n" ), fileID.GetPath().AsChar() );
 			}
 		}
 	}
@@ -266,29 +222,6 @@ void FileSystem::PrintPortableDevices( const Array< PortableDevice > & _devices 
 	}
 }
 
-FileSystem::Explorer * FileSystem::ExploreDriveOrPortableDevice( const Array< Drive > & _drives, const Array< PortableDevice > & _devices, const String & _input ) {
-	if ( _input[ 0 ] >= TEXT( '0' ) && _input[ 0 ] <= TEXT( '9' ) ) {
-		const unsigned int deviceIndex = _wtoi( _input );
-		if ( deviceIndex < _devices.NumItems() ) {
-			return new PortableDeviceExplorer( _devices[ deviceIndex ] );
-		}
-	} else {
-		wchar_t driveLetter = _input[ 0 ];
-		if ( driveLetter >= 'a' && driveLetter <= 'z' ) {
-			driveLetter = 'A' + ( driveLetter - 'a' );
-		}
-
-		for ( unsigned int driveIndex = 0; driveIndex < _drives.NumItems(); driveIndex++ ) {
-			const FileSystem::Drive & drive = _drives[ driveIndex ];
-			if ( driveLetter == drive.m_path[ 0 ] ) {
-				return new DriveExplorer( drive );
-			}
-		}
-	}
-
-	return NULL;
-}
-
 void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOutput & _output ) {
 	const Array< String > & sourceFolderNames = _input.m_sourceExplorer->GetFolderNames();
 	const Array< String > & sourceFileNames = _input.m_sourceExplorer->GetFileNames();
@@ -342,7 +275,9 @@ void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOut
 				sourceFolderIndex++;
 				destinationFolderIndex++;
 			} else if ( comparison < 0 ) {
-				_input.m_sourceExplorer->GetFolderID( sourceFolderIndex, _output.m_missingFolders.Add() );
+				ComparePathsOutput::MissingFolder & missingFolder = _output.m_missingFolders.Add();
+				_input.m_sourceExplorer->GetFolderID( sourceFolderIndex, missingFolder.m_sourceFolderID );
+				_input.m_destinationExplorer->GetID( missingFolder.m_destinationParentFolderID );
 				sourceFolderIndex++;
 			} else {
 				_input.m_destinationExplorer->GetFolderID( destinationFolderIndex, _output.m_extraFolders.Add() );
@@ -351,7 +286,9 @@ void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOut
 		}
 
 		while ( sourceFolderIndex < sourceFolderNames.NumItems() ) {
-			_input.m_sourceExplorer->GetFolderID( sourceFolderIndex, _output.m_missingFolders.Add() );
+			ComparePathsOutput::MissingFolder & missingFolder = _output.m_missingFolders.Add();
+			_input.m_sourceExplorer->GetFolderID( sourceFolderIndex, missingFolder.m_sourceFolderID );
+			_input.m_destinationExplorer->GetID( missingFolder.m_destinationParentFolderID );
 			sourceFolderIndex++;
 		}
 
@@ -369,22 +306,12 @@ void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOut
 		while ( sourceFileIndex < sourceFileNames.NumItems() && destinationFileIndex < destinationFileNames.NumItems() ) {
 			const String & sourceFileName = sourceFileNames[ sourceFileIndex ];
 			const String & destinationFileName = destinationFileNames[ destinationFileIndex ];
-			const wchar_t * sourceFileExtension = sourceFileName.GetExtension();
-			const wchar_t * destinationFileExtension = destinationFileName.GetExtension();
-			bool bothAreAudioFiles = false;
-			bool bothArePlaylistFiles = false;
-			bool ignoreExtensions = false;
+			const wchar_t * sourceFileExtension = sourceFileName.GetFileExtension();
+			const wchar_t * destinationFileExtension = destinationFileName.GetFileExtension();
+			const bool bothAreAudioFiles = IsAudioFile( sourceFileExtension ) && IsAudioFile( destinationFileExtension );
+			const bool bothArePlaylistFiles = IsPlaylistFile( sourceFileExtension ) && IsPlaylistFile( destinationFileExtension );
+			const bool ignoreExtensions = bothAreAudioFiles || bothArePlaylistFiles;
 			int comparison = 0;
-
-			if ( !_input.m_audioFileExtensions.IsEmpty() ) {
-				bothAreAudioFiles = _input.IsAudioFile( sourceFileExtension ) && _input.IsAudioFile( destinationFileExtension );
-				ignoreExtensions |= bothAreAudioFiles;
-			}
-
-			if ( !_input.m_playlistFileExtensions.IsEmpty() ) {
-				bothArePlaylistFiles = _input.IsPlaylistFile( sourceFileExtension ) && _input.IsPlaylistFile( destinationFileExtension );
-				ignoreExtensions |= bothArePlaylistFiles;
-			}
 
 			if ( ignoreExtensions ) {
 				const unsigned int sourceFileNameLength = static_cast< unsigned int >( sourceFileExtension - sourceFileName.AsChar() ) - 1;
@@ -476,5 +403,110 @@ void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOut
 
 	if ( _input.m_printProgress ) {
 		Console::WriteLine( cursorPosition, TEXT( "[100%%]" ) );
+	}
+}
+
+void FileSystem::FixMissingFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output ) {
+	for ( unsigned int missingFolderIndex = 0; missingFolderIndex < _output.m_missingFolders.NumItems(); missingFolderIndex++ ) {
+		const ComparePathsOutput::MissingFolder & missingFolder = _output.m_missingFolders[ missingFolderIndex ];
+		FixMissingFolder( _input, missingFolder );
+	}
+}
+
+void FileSystem::FixMissingFolder( const ComparePathsInput & _input, const ComparePathsOutput::MissingFolder & _missingFolder ) {
+	String folderName = _missingFolder.m_sourceFolderID.GetPath();
+	folderName.StripPath();
+
+	FolderID createdFolderID;
+	if ( _input.m_destinationExplorer->CreateFolder( _missingFolder.m_destinationParentFolderID, folderName, createdFolderID ) ) {
+		Printf( TEXT( "Created folder \"%s\"\n" ), createdFolderID.GetPath().AsChar() );
+
+		Explorer * sourceFolderExplorer = _input.m_sourceExplorer->ExploreFolder( _missingFolder.m_sourceFolderID );
+
+		const Array< String > & sourceFolderNames = sourceFolderExplorer->GetFolderNames();
+		for ( unsigned int sourceFolderIndex = 0; sourceFolderIndex < sourceFolderNames.NumItems(); sourceFolderIndex++ ) {
+			ComparePathsOutput::MissingFolder missingFolder;
+			sourceFolderExplorer->GetFolderID( sourceFolderIndex, missingFolder.m_sourceFolderID );
+			missingFolder.m_destinationParentFolderID = createdFolderID;
+
+			FixMissingFolder( _input, missingFolder );
+		}
+
+		const Array< String > & sourceFileNames = sourceFolderExplorer->GetFileNames();
+		for ( unsigned int sourceFileIndex = 0; sourceFileIndex < sourceFileNames.NumItems(); sourceFileIndex++ ) {
+			const String & sourceFileName = sourceFileNames[ sourceFileIndex ];
+
+			FileID sourceFileID;
+			sourceFolderExplorer->GetFileID( sourceFileIndex, sourceFileID );
+
+			File * file = sourceFolderExplorer->ReadFile( sourceFileID );
+			if ( file != NULL ) {
+				FileID createdFileID;
+				if ( _input.m_destinationExplorer->CreateFile( createdFolderID, sourceFileName, *file, createdFileID ) ) {
+					Printf( TEXT( "Created file \"%s\"\n" ), createdFileID.GetPath().AsChar() );
+
+					if ( sourceFolderExplorer->IsFileReadOnly( sourceFileID ) ) {
+						_input.m_destinationExplorer->SetFileReadOnly( createdFileID, true );
+					}
+				} else {
+					Printf( TEXT( "Couldn't create file \"%s\"\n" ), sourceFileName.AsChar() );
+				}
+
+				file->Release();
+			} else {
+				Printf( TEXT( "Couldn't read file \"%s\"\n" ), sourceFileName.AsChar() );
+			}
+		}
+
+		sourceFolderExplorer->Release();
+	} else {
+		Printf( TEXT( "Couldn't create folder \"%s\"\n" ), folderName.AsChar() );
+	}
+}
+
+void FileSystem::FixDifferentPlaylistFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output ) {
+	unsigned int playlistIndex = 0;
+	for ( unsigned int index = 0; index < _output.m_differentFiles.NumItems(); index++ ) {
+		const FileSystem::FileID & fileID = _output.m_differentFiles[ index ];
+		const wchar_t * fileExtension = fileID.GetPath().GetFileExtension();
+
+		if ( IsPlaylistFile( fileExtension ) ) {
+			const String & expectedPlaylist = _output.m_expectedPlaylists[ playlistIndex++ ];
+								
+			TextFile file;
+			file.Set( TextFile::UTF_8, expectedPlaylist );
+
+			if ( _input.m_destinationExplorer->WriteFile( fileID, file ) ) {
+				Printf( TEXT( "Fixed playlist file \"%s\"\n" ), fileID.GetPath().AsChar() );
+			} else {
+				Printf( TEXT( "Couldn't write file \"%s\"\n" ), fileID.GetPath().AsChar() );
+			}
+		}
+	}
+}
+
+bool FileSystem::IsAudioFile( const wchar_t * _extension ) {
+	return String::Compare( _extension, TEXT( "flac" ) ) == 0 || String::Compare( _extension, TEXT( "mp3" ) ) == 0;
+}
+
+bool FileSystem::IsPlaylistFile( const wchar_t * _extension ) {
+	return String::Compare( _extension, TEXT( "m3u" ) ) == 0 || String::Compare( _extension, TEXT( "m3u8" ) ) == 0;
+}
+
+GUID FileSystem::GetAudioFileFormat( const wchar_t * _extension ) {
+	if ( String::Compare( _extension, TEXT( "flac" ) ) == 0 ) {
+		return WPD_OBJECT_FORMAT_FLAC;
+	} else if ( String::Compare( _extension, TEXT( "mp3" ) ) == 0 ) {
+		return WPD_OBJECT_FORMAT_MP3;
+	} else {
+		return WPD_OBJECT_FORMAT_UNSPECIFIED;
+	}
+}
+
+GUID FileSystem::GetPlaylistFileFormat( const wchar_t * _extension ) {
+	if ( String::Compare( _extension, TEXT( "m3u" ) ) == 0 || String::Compare( _extension, TEXT( "m3u8" ) ) == 0 ) {
+		return WPD_OBJECT_FORMAT_M3UPLAYLIST;
+	} else {
+		return WPD_OBJECT_FORMAT_UNSPECIFIED;
 	}
 }
