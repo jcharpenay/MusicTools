@@ -101,19 +101,21 @@ void String::StripPath() {
 	const wchar_t * fileName = GetFileName();
 	if ( fileName != m_data ) {
 		const unsigned int fileNameIndex = static_cast< unsigned int >( fileName - m_data );
-		for ( unsigned int index = 0; index < fileNameIndex; index++ ) {
+		const unsigned int newLength = m_length - fileNameIndex;
+		for ( unsigned int index = 0; index < newLength; index++ ) {
 			m_data[ index ] = m_data[ fileNameIndex + index ];
 		}
-		m_length -= fileNameIndex;
+		m_data[ newLength ] = TEXT( '\0' );
+		m_length = newLength;
 	}
 }
 
 void String::StripFileExtension() {
 	const wchar_t * fileExtension = GetFileExtension();
 	if ( fileExtension != TEXT( "" ) ) {
-		const unsigned int dotIndex = static_cast< unsigned int >( fileExtension - m_data ) - 1;
-		m_data[ dotIndex ] = '\0';
-		m_length = dotIndex;
+		const unsigned int newLength = static_cast< unsigned int >( fileExtension - m_data ) - 1;
+		m_data[ newLength ] = '\0';
+		m_length = newLength;
 	}
 }
 

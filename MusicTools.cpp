@@ -28,7 +28,7 @@ FileSystem::Explorer * MusicTools::ExploreDriveOrPortableDevice( const Array< Fi
 	return NULL;
 }
 
-void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explorer > & _explorer, RefCountedPtr< FileSystem::Explorer > & _musicExplorer, RefCountedPtr< FileSystem::Explorer > & _playlistExplorer, String & _musicExtension ) {
+void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explorer > & _explorer, RefCountedPtr< FileSystem::Explorer > & _musicExplorer, RefCountedPtr< FileSystem::Explorer > & _playlistExplorer, String & _musicExtension, String & _playlistExtension ) {
 	RefCountedPtr< FileSystem::Explorer > current = _explorer;
 	bool findMusicFolder = true;
 	bool findPlaylistsFolder = true;
@@ -88,7 +88,8 @@ void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explore
 				for ( unsigned int fileIndex = 0; fileIndex < fileNames.NumItems(); fileIndex++ ) {
 					const String & fileName = fileNames[ fileIndex ];
 					const wchar_t * fileExtension = fileName.GetFileExtension();
-					if ( String::Compare( fileExtension, TEXT( "m3u" ) ) == 0 || String::Compare( fileExtension, TEXT( "m3u8" ) ) == 0 ) {
+					if ( FileSystem::IsPlaylistFile( fileExtension ) ) {
+						_playlistExtension = fileExtension;
 						findPlaylistsFolder = false;
 						break;
 					}
@@ -101,7 +102,7 @@ void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explore
 					for ( unsigned int fileIndex = 0; fileIndex < fileNames.NumItems(); fileIndex++ ) {
 						const String & fileName = fileNames[ fileIndex ];
 						const wchar_t * fileExtension = fileName.GetFileExtension();
-						if ( String::Compare( fileExtension, TEXT( "flac" ) ) == 0 || String::Compare( fileExtension, TEXT( "mp3" ) ) == 0 ) {
+						if ( FileSystem::IsAudioFile( fileExtension ) ) {
 							_musicExtension = fileExtension;
 							findMusicExtension = false;
 							break;
@@ -119,7 +120,7 @@ void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explore
 	} while ( nextFolderID.IsValid() );
 }
 
-void MusicTools::PrintMusicAndPlaylists( const FileSystem::Explorer * _musicExplorer, const FileSystem::Explorer * _playlistExplorer, const String & _musicExtension ) {
+void MusicTools::PrintMusicAndPlaylists( const FileSystem::Explorer * _musicExplorer, const FileSystem::Explorer * _playlistExplorer, const String & _musicExtension, const String & _playlistExtension ) {
 	if ( _musicExplorer != NULL ) {
 		Printf( TEXT( "\tMusic Path: \"%s\"\n" ), _musicExplorer->GetPath().AsChar() );
 	} else {
@@ -136,6 +137,12 @@ void MusicTools::PrintMusicAndPlaylists( const FileSystem::Explorer * _musicExpl
 		Printf( TEXT( "\tMusic Extension not found\n" ) );
 	} else {
 		Printf( TEXT( "\tMusic Extension: \"%s\"\n" ), _musicExtension.AsChar() );
+	}
+
+	if ( _playlistExtension.IsEmpty() ) {
+		Printf( TEXT( "\tPlaylist Extension not found\n" ) );
+	} else {
+		Printf( TEXT( "\tPlaylist Extension: \"%s\"\n" ), _playlistExtension.AsChar() );
 	}
 }
 

@@ -105,6 +105,7 @@ namespace FileSystem {
 			String	m_sourceMusicPath;
 			String	m_destinationMusicPath;
 			String	m_destinationMusicExtension;
+			String	m_destinationPlaylistExtension;
 		};
 
 		const Explorer *	m_sourceExplorer;
@@ -129,14 +130,28 @@ namespace FileSystem {
 			FolderID	m_destinationParentFolderID;
 		};
 
+		class MissingFile {
+		public:
+			FolderID				m_sourceFileID;
+			FolderID				m_destinationParentFolderID;
+			RefCountedPtr< File >	m_expectedFile;
+			String					m_expectedFileExtension;
+		};
+
+		class DifferentFile {
+		public:
+			FileID					m_sourceFileID;
+			FileID					m_destinationFileID;
+			RefCountedPtr< File >	m_expectedFile;
+		};
+
 		Array< MissingFolder >	m_missingFolders;
 		Array< FolderID >		m_extraFolders;
-		Array< FileID >			m_missingFiles;
+		Array< MissingFile >	m_missingFiles;
 		Array< FileID >			m_extraFiles;
-		Array< FileID >			m_differentFiles;
+		Array< DifferentFile >	m_differentFiles;
 		unsigned int			m_audioFileTagsReadFromSource;
 		unsigned int			m_audioFileTagsReadFromDestination;
-		Array< String >			m_expectedPlaylists;
 
 		ComparePathsOutput();
 
@@ -156,7 +171,12 @@ namespace FileSystem {
 	void ComparePaths( const ComparePathsInput & _input, ComparePathsOutput & _output );
 	void FixMissingFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output );
 	void FixMissingFolder( const ComparePathsInput & _input, const ComparePathsOutput::MissingFolder & _missingFolder );
-	void FixDifferentPlaylistFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output );
+	void FixExtraFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output );
+	void FixMissingFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output );
+	void FixMissingFile( const ComparePathsInput & _input, const ComparePathsOutput::MissingFile & _missingFile );
+	void FixExtraFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output );
+	void FixDifferentFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output );
+	void FixDifferentFile( const ComparePathsInput & _input, const ComparePathsOutput::DifferentFile & _differentFile );
 
 	bool IsAudioFile( const wchar_t * _extension );
 	bool IsPlaylistFile( const wchar_t * _extension );

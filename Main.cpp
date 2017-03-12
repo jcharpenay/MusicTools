@@ -18,10 +18,12 @@ int wmain( int argc, wchar_t * argv[] ) {
 			RefCountedPtr< FileSystem::Explorer > sourceMusicExplorer;
 			RefCountedPtr< FileSystem::Explorer > sourcePlaylistsExplorer;
 			String sourceMusicExtension;
+			String sourcePlaylistExtension;
 
 			RefCountedPtr< FileSystem::Explorer > destinationMusicExplorer;
 			RefCountedPtr< FileSystem::Explorer > destinationPlaylistsExplorer;
 			String destinationMusicExtension;
+			String destinationPlaylistExtension;
 
 			// Print drives
 			Array< FileSystem::Drive > drives;
@@ -37,24 +39,24 @@ int wmain( int argc, wchar_t * argv[] ) {
 			String source;
 			Console::AskString( TEXT( "Source: " ), source );
 
-			RefCountedPtr< FileSystem::Explorer > sourceExplorer = MusicTools::ExploreDriveOrPortableDevice( drives, devices, source );
+			RefCountedPtr< FileSystem::Explorer > sourceExplorer( MusicTools::ExploreDriveOrPortableDevice( drives, devices, source ) );
 			if ( sourceExplorer != NULL ) {
-				MusicTools::FindMusicAndPlaylists( sourceExplorer, sourceMusicExplorer, sourcePlaylistsExplorer, sourceMusicExtension );
+				MusicTools::FindMusicAndPlaylists( sourceExplorer, sourceMusicExplorer, sourcePlaylistsExplorer, sourceMusicExtension, sourcePlaylistExtension );
 			}
 
-			MusicTools::PrintMusicAndPlaylists( sourceMusicExplorer, sourcePlaylistsExplorer, sourceMusicExtension );
+			MusicTools::PrintMusicAndPlaylists( sourceMusicExplorer, sourcePlaylistsExplorer, sourceMusicExtension, sourcePlaylistExtension );
 
 			if ( sourceMusicExplorer != NULL ) {
 				// Ask for the destination path
 				String destination;
 				Console::AskString( TEXT( "Destination: " ), destination );
 
-				RefCountedPtr< FileSystem::Explorer > destinationExplorer = MusicTools::ExploreDriveOrPortableDevice( drives, devices, destination );
+				RefCountedPtr< FileSystem::Explorer > destinationExplorer( MusicTools::ExploreDriveOrPortableDevice( drives, devices, destination ) );
 				if ( destinationExplorer != NULL ) {
-					MusicTools::FindMusicAndPlaylists( destinationExplorer, destinationMusicExplorer, destinationPlaylistsExplorer, destinationMusicExtension );
+					MusicTools::FindMusicAndPlaylists( destinationExplorer, destinationMusicExplorer, destinationPlaylistsExplorer, destinationMusicExtension, destinationPlaylistExtension );
 				}
 
-				MusicTools::PrintMusicAndPlaylists( destinationMusicExplorer, destinationPlaylistsExplorer, destinationMusicExtension );
+				MusicTools::PrintMusicAndPlaylists( destinationMusicExplorer, destinationPlaylistsExplorer, destinationMusicExtension, destinationPlaylistExtension );
 			}
 
 			if ( sourceMusicExplorer != NULL && destinationMusicExplorer != NULL ) {
@@ -80,8 +82,23 @@ int wmain( int argc, wchar_t * argv[] ) {
 					compareMusicOutput.Print( compareMusicInput );
 
 					// Ask for action
-					if ( !compareMusicOutput.m_missingFolders.IsEmpty() && sourceMusicExtension == destinationMusicExtension && Console::AskBool( TEXT( "Fix missing folders? (y/n) " ) ) ) {
+					if ( !( compareMusicOutput.m_missingFolders.IsEmpty() && compareMusicOutput.m_missingFiles.IsEmpty() )
+						&& sourceMusicExtension == destinationMusicExtension
+						&& Console::AskBool( TEXT( "Fix missing files & folders? (y/n) " ) ) ) {
 						FileSystem::FixMissingFolders( compareMusicInput, compareMusicOutput );
+						FileSystem::FixMissingFiles( compareMusicInput, compareMusicOutput );
+					}
+
+					if ( !( compareMusicOutput.m_extraFolders.IsEmpty() && compareMusicOutput.m_extraFiles.IsEmpty() )
+						&& Console::AskBool( TEXT( "Delete extra files & folders? (y/n) " ) ) ) {
+						FileSystem::FixExtraFolders( compareMusicInput, compareMusicOutput );
+						FileSystem::FixExtraFiles( compareMusicInput, compareMusicOutput );
+					}
+
+					if ( !compareMusicOutput.m_differentFiles.IsEmpty()
+						&& sourceMusicExtension == destinationMusicExtension
+						&& Console::AskBool( TEXT( "Fix different files? (y/n) " ) ) ) {
+						FileSystem::FixDifferentFiles( compareMusicInput, compareMusicOutput );
 					}
 				}
 
@@ -103,6 +120,7 @@ int wmain( int argc, wchar_t * argv[] ) {
 						comparePlaylistsInput.m_playlistComparison.m_sourceMusicPath = sourcePlaylistsToMusicPath;
 						comparePlaylistsInput.m_playlistComparison.m_destinationMusicPath = destinationPlaylistsToMusicPath;
 						comparePlaylistsInput.m_playlistComparison.m_destinationMusicExtension = destinationMusicExtension;
+						comparePlaylistsInput.m_playlistComparison.m_destinationPlaylistExtension = destinationPlaylistExtension;
 						comparePlaylistsInput.m_compareFiles = true;
 						comparePlaylistsInput.m_comparePlaylists = true;
 
@@ -110,8 +128,19 @@ int wmain( int argc, wchar_t * argv[] ) {
 						comparePlaylistsOutput.Print( comparePlaylistsInput );
 
 						// Ask for action
-						if ( !comparePlaylistsOutput.m_differentFiles.IsEmpty() && Console::AskBool( TEXT( "Fix different files? (y/n) " ) ) ) {
-							FileSystem::FixDifferentPlaylistFiles( comparePlaylistsInput, comparePlaylistsOutput );
+						if ( !comparePlaylistsOutput.m_missingFiles.IsEmpty()
+							&& Console::AskBool( TEXT( "Fix missing files? (y/n) " ) ) ) {
+							FileSystem::FixMissingFiles( comparePlaylistsInput, comparePlaylistsOutput );
+						}
+
+						if ( !comparePlaylistsOutput.m_extraFiles.IsEmpty()
+							&& Console::AskBool( TEXT( "Delete extra files? (y/n) " ) ) ) {
+							FileSystem::FixExtraFiles( comparePlaylistsInput, comparePlaylistsOutput );
+						}
+
+						if ( !comparePlaylistsOutput.m_differentFiles.IsEmpty()
+							&& Console::AskBool( TEXT( "Fix different files? (y/n) " ) ) ) {
+							FileSystem::FixDifferentFiles( comparePlaylistsInput, comparePlaylistsOutput );
 						}
 					} else {
 						// Nothing else to display, directly exit

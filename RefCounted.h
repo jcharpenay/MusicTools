@@ -24,7 +24,7 @@ template< class T > class RefCountedPtr {
 public:
 	// Constructor
 	RefCountedPtr() : m_ptr( NULL ) {}
-	RefCountedPtr( T * _ptr ) : m_ptr( _ptr ) {}
+	explicit RefCountedPtr( T * _ptr ) : m_ptr( _ptr ) {}
 	RefCountedPtr( const RefCountedPtr< T > & _other ) : m_ptr( _other.m_ptr ) { AddRefIfNotNull(); }
 
 	// Destructor
@@ -37,13 +37,6 @@ public:
 		if ( m_ptr != _ptr ) {
 			ReleaseIfNotNull();
 			m_ptr = _ptr;
-		}
-	}
-
-	void operator=( const RefCountedPtr< T > & _other ) {
-		if ( m_ptr != _other.m_ptr ) {
-			ReleaseIfNotNull();
-			m_ptr = _other.m_ptr;
 			AddRefIfNotNull();
 		}
 	}
@@ -80,10 +73,6 @@ public:
 	ComPtr( const ComPtr< T > & _other ) : RefCountedPtr( _other ) {}
 
 	// Operations
-	void operator=( const ComPtr< T > & _other ) {
-		RefCountedPtr< T >::operator=( _other );
-	}
-
 	template< class U > HRESULT As( ComPtr< U > & _other ) const {
 		if ( m_ptr != NULL ) {
 			_other = NULL;
