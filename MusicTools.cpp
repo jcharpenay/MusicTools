@@ -115,7 +115,7 @@ void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explore
 		}
 
 		if ( nextFolderID.IsValid() ) {
-			current = current->ExploreFolder( nextFolderID );
+			current = RefCountedPtr< FileSystem::Explorer >( current->ExploreFolder( nextFolderID ) );
 		}
 	} while ( nextFolderID.IsValid() );
 }

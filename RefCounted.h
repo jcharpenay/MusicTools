@@ -41,6 +41,14 @@ public:
 		}
 	}
 
+	void operator=( const RefCountedPtr< T > & _other ) {
+		if ( m_ptr != _other.m_ptr ) {
+			ReleaseIfNotNull();
+			m_ptr = _other.m_ptr;
+			AddRefIfNotNull();
+		}
+	}
+
 	// Accessors
 	const T ** operator&() const	{ return &m_ptr; }
 	T ** operator&()				{ return &m_ptr; }
