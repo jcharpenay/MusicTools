@@ -134,8 +134,6 @@ namespace FileSystem {
 		public:
 			FolderID				m_sourceFileID;
 			FolderID				m_destinationParentFolderID;
-			RefCountedPtr< File >	m_expectedFile;
-			String					m_expectedFileExtension;
 		};
 
 		class DifferentFile {
