@@ -173,12 +173,10 @@ bool FileSystem::PortableDeviceExplorer::CreateFile( const FolderID & _parentFol
 			ComPtr< IStream > stream;
 			DWORD optimalBufferSize = 0;
 			wchar_t * fileID = NULL;
-			ComPtr< IPortableDeviceDataStream > dataStream;
 			HRESULT result = S_OK;
 
 			if ( SUCCEEDED( result = m_content->CreateObjectWithPropertiesAndData( fileProperties, &stream, &optimalBufferSize, &fileID ) )
-				&& SUCCEEDED( result = stream.As( dataStream ) )
-				&& WriteStream( *dataStream, optimalBufferSize, _file ) ) {
+				&& WriteStream( *stream, optimalBufferSize, _file ) ) {
 				String path = m_path;
 				path.AddPath( _fileName );
 
@@ -214,13 +212,11 @@ bool FileSystem::PortableDeviceExplorer::WriteFile( const FileID & _fileID, cons
 			ComPtr< IPortableDeviceContent2 > content2;
 			ComPtr< IStream > stream;
 			DWORD optimalBufferSize = 0;
-			ComPtr< IPortableDeviceDataStream > dataStream;
 			HRESULT result = S_OK;
 
 			if ( SUCCEEDED( result = m_content.As( content2 ) )
 				&& SUCCEEDED( result = content2->UpdateObjectWithPropertiesAndData( _fileID.GetID(), fileProperties, &stream, &optimalBufferSize ) )
-				&& SUCCEEDED( result = stream.As( dataStream ) )
-				&& WriteStream( *dataStream, optimalBufferSize, _file ) ) {
+				&& WriteStream( *stream, optimalBufferSize, _file ) ) {
 				succeeded = true;
 			}
 
@@ -452,7 +448,7 @@ File * FileSystem::PortableDeviceExplorer::ReadStream( IStream & _stream, DWORD 
 	}
 }
 
-bool FileSystem::PortableDeviceExplorer::WriteStream( IPortableDeviceDataStream & _stream, DWORD _optimalBufferSize, const File & _file ) {
+bool FileSystem::PortableDeviceExplorer::WriteStream( IStream & _stream, DWORD _optimalBufferSize, const File & _file ) {
 	const Buffer & buffer = _file.GetBuffer();
 	const unsigned int fileSize = buffer.Size();
 	ULONG sizeWritten = 0;

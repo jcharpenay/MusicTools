@@ -35,7 +35,7 @@ namespace FileSystem {
 		static void FileSwapCallback( void * _ptr, unsigned int _firstIndex, unsigned int _secondIndex );
 
 		static File * ReadStream( IStream & _stream, DWORD _optimalBufferSize, DWORD _fileSize );
-		static bool WriteStream( IPortableDeviceDataStream & _stream, DWORD _optimalBufferSize, const File & _file );
+		static bool WriteStream( IStream & _stream, DWORD _optimalBufferSize, const File & _file );
 
 		mutable ComPtr< IPortableDeviceContent >		m_content;
 		mutable ComPtr< IPortableDeviceProperties >		m_properties;
