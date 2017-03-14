@@ -26,3 +26,9 @@
 #define BIT( n )		( 1 << ( n ) )
 #define MIN( a, b )		( ( a ) < ( b ) ? ( a ) : ( b ) )
 #define MAX( a, b )		( ( a ) > ( b ) ? ( a ) : ( b ) )
+
+#ifdef _DEBUG
+	#define DEBUG_ASSERT( _cond_ )	if ( !( _cond_ ) ) { __debugbreak(); }
+#else
+	#define DEBUG_ASSERT( _cond_ )
+#endif // _DEBUG

@@ -3,21 +3,25 @@
 class RefCounted {
 public:
 	// Constructor
-	RefCounted() : m_refCount( 1 ) {}
+	RefCounted();
 
 	// Destructor
-	virtual ~RefCounted() {}
+	virtual ~RefCounted();
 
 	// Operations
-	void AddRef() { m_refCount++; }
-	void Release() {
-		if ( --m_refCount == 0 ) {
-			delete this;
-		}
-	}
+	void AddRef();
+	void Release();
+
+#ifdef _DEBUG
+	static unsigned int NumObjects() { return s_numObjects; }
+#endif // _DEBUG
 
 private:
 	unsigned int m_refCount;
+
+#ifdef _DEBUG
+	static unsigned int s_numObjects;
+#endif // _DEBUG
 };
 
 template< class T > class RefCountedPtr {

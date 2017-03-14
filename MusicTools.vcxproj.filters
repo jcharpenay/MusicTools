@@ -44,6 +44,9 @@
     <ClCompile Include="MusicTools.cpp">
       <Filter>Fichiers</Filter>
     </ClCompile>
+    <ClCompile Include="RefCounted.cpp">
+      <Filter>Fichiers\Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precompiled.h">

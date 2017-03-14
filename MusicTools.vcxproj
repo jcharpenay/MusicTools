@@ -167,6 +167,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MusicTools.cpp" />
     <ClCompile Include="PortableDeviceExplorer.cpp" />
+    <ClCompile Include="RefCounted.cpp" />
     <ClCompile Include="String.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -151,6 +151,8 @@ int wmain( int argc, wchar_t * argv[] ) {
 		}
 
 		CoUninitialize();
+
+		DEBUG_ASSERT( RefCounted::NumObjects() == 0 );
 	} else {
 		Printf( TEXT( "COM initialization failed\n" ) );
 	}
