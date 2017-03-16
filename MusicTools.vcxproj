@@ -164,11 +164,13 @@
     <ClCompile Include="DriveExplorer.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="FileSystem.cpp" />
+    <ClCompile Include="Lock.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MusicTools.cpp" />
     <ClCompile Include="PortableDeviceExplorer.cpp" />
     <ClCompile Include="RefCounted.cpp" />
     <ClCompile Include="String.cpp" />
+    <ClCompile Include="Thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Array.h" />
@@ -177,12 +179,14 @@
     <ClInclude Include="DriveExplorer.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="Lock.h" />
     <ClInclude Include="MusicTools.h" />
     <ClInclude Include="PortableDeviceExplorer.h" />
     <ClInclude Include="Precompiled.h" />
     <ClInclude Include="RefCounted.h" />
     <ClInclude Include="Sort.h" />
     <ClInclude Include="String.h" />
+    <ClInclude Include="Thread.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Array.inl" />

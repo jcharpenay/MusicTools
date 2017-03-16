@@ -47,6 +47,12 @@
     <ClCompile Include="RefCounted.cpp">
       <Filter>Fichiers\Base</Filter>
     </ClCompile>
+    <ClCompile Include="Thread.cpp">
+      <Filter>Fichiers\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Lock.cpp">
+      <Filter>Fichiers\Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precompiled.h">
@@ -84,6 +90,12 @@
     </ClInclude>
     <ClInclude Include="MusicTools.h">
       <Filter>Fichiers</Filter>
+    </ClInclude>
+    <ClInclude Include="Thread.h">
+      <Filter>Fichiers\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>Fichiers\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
