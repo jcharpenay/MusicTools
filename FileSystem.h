@@ -132,8 +132,8 @@ namespace FileSystem {
 
 		class MissingFile {
 		public:
-			FolderID				m_sourceFileID;
-			FolderID				m_destinationParentFolderID;
+			FolderID	m_sourceFileID;
+			FolderID	m_destinationParentFolderID;
 		};
 
 		class DifferentFile {

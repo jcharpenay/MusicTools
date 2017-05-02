@@ -14,8 +14,6 @@ TextFile::TextFile() : m_encoding( ANSI ) {
 }
 
 TextFile::TextFile( File & _file ) : File( _file.GetBuffer() ), m_encoding( ANSI ) {
-	m_buffer->AddRef();
-
 	// Read BOM
 	unsigned char * data = m_buffer->Data();
 	m_str = reinterpret_cast< char * >( data );

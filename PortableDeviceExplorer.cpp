@@ -421,7 +421,7 @@ void FileSystem::PortableDeviceExplorer::FileSwapCallback( void * _ptr, unsigned
 }
 
 File * FileSystem::PortableDeviceExplorer::ReadStream( IStream & _stream, DWORD _optimalBufferSize, DWORD _fileSize ) {
-	Buffer * buffer = new Buffer( _fileSize );
+	RefCountedPtr< Buffer > buffer = new Buffer( _fileSize );
 	ULONG sizeRead = 0;
 	ULONG totalSizeRead = 0;
 
@@ -440,8 +440,6 @@ File * FileSystem::PortableDeviceExplorer::ReadStream( IStream & _stream, DWORD 
 	if ( totalSizeRead == _fileSize ) {
 		return new File( *buffer );
 	} else {
-		buffer->Release();
-
 		Printf( TEXT( "Read %u byte(s) but %u was expected\n" ), totalSizeRead, _fileSize );
 
 		return NULL;

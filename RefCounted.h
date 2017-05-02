@@ -28,7 +28,7 @@ template< class T > class RefCountedPtr {
 public:
 	// Constructor
 	RefCountedPtr() : m_ptr( NULL ) {}
-	explicit RefCountedPtr( T * _ptr ) : m_ptr( _ptr ) {}
+	RefCountedPtr( T * _ptr ) : m_ptr( _ptr ) { AddRefIfNotNull(); }
 	RefCountedPtr( const RefCountedPtr< T > & _other ) : m_ptr( _other.m_ptr ) { AddRefIfNotNull(); }
 
 	// Destructor

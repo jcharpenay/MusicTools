@@ -92,7 +92,7 @@ File * FileSystem::DriveExplorer::ReadFile( const FileID & _fileID ) const {
 		if ( hFile != INVALID_HANDLE_VALUE ) {
 			const DWORD size = GetFileSize( hFile, NULL );
 			if ( size != INVALID_FILE_SIZE ) {
-				Buffer * buffer = new Buffer( size );
+				RefCountedPtr< Buffer > buffer = new Buffer( size );
 				DWORD sizeRead = 0;
 				if ( ::ReadFile( hFile, buffer->Data(), size, &sizeRead, NULL ) != 0 ) {
 					if ( sizeRead == size ) {
@@ -102,9 +102,6 @@ File * FileSystem::DriveExplorer::ReadFile( const FileID & _fileID ) const {
 					}
 				} else {
 					Printf( TEXT( "ReadFile failed: %u\n" ), GetLastError() );
-				}
-				if ( file == NULL ) {
-					buffer->Release();
 				}
 			}
 			CloseHandle( hFile );

@@ -39,7 +39,7 @@ int wmain( int argc, wchar_t * argv[] ) {
 			String source;
 			Console::AskString( TEXT( "Source: " ), source );
 
-			RefCountedPtr< FileSystem::Explorer > sourceExplorer( MusicTools::ExploreDriveOrPortableDevice( drives, devices, source ) );
+			RefCountedPtr< FileSystem::Explorer > sourceExplorer = MusicTools::ExploreDriveOrPortableDevice( drives, devices, source );
 			if ( sourceExplorer != NULL ) {
 				MusicTools::FindMusicAndPlaylists( sourceExplorer, sourceMusicExplorer, sourcePlaylistsExplorer, sourceMusicExtension, sourcePlaylistExtension );
 			}
@@ -51,7 +51,7 @@ int wmain( int argc, wchar_t * argv[] ) {
 				String destination;
 				Console::AskString( TEXT( "Destination: " ), destination );
 
-				RefCountedPtr< FileSystem::Explorer > destinationExplorer( MusicTools::ExploreDriveOrPortableDevice( drives, devices, destination ) );
+				RefCountedPtr< FileSystem::Explorer > destinationExplorer = MusicTools::ExploreDriveOrPortableDevice( drives, devices, destination );
 				if ( destinationExplorer != NULL ) {
 					MusicTools::FindMusicAndPlaylists( destinationExplorer, destinationMusicExplorer, destinationPlaylistsExplorer, destinationMusicExtension, destinationPlaylistExtension );
 				}

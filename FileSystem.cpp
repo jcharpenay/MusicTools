@@ -253,8 +253,8 @@ void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOut
 					_input.m_sourceExplorer->GetFolderID( sourceFolderIndex, sourceFolderID );
 					_input.m_destinationExplorer->GetFolderID( destinationFolderIndex, destinationFolderID );
 
-					RefCountedPtr< Explorer > sourceFolderExplorer( _input.m_sourceExplorer->ExploreFolder( sourceFolderID ) );
-					RefCountedPtr< Explorer > destinationFolderExplorer( _input.m_destinationExplorer->ExploreFolder( destinationFolderID ) );
+					RefCountedPtr< Explorer > sourceFolderExplorer = _input.m_sourceExplorer->ExploreFolder( sourceFolderID );
+					RefCountedPtr< Explorer > destinationFolderExplorer = _input.m_destinationExplorer->ExploreFolder( destinationFolderID );
 
 					ComparePathsInput subPathInput = _input;
 					subPathInput.m_sourceExplorer = sourceFolderExplorer;
@@ -359,8 +359,8 @@ void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOut
 					_input.m_sourceExplorer->GetFileID( sourceFileIndex, sourceFileID );
 					_input.m_destinationExplorer->GetFileID( destinationFileIndex, destinationFileID );
 
-					RefCountedPtr< File > sourceFile( _input.m_sourceExplorer->ReadFile( sourceFileID ) );
-					RefCountedPtr< File > destinationFile( _input.m_destinationExplorer->ReadFile( destinationFileID ) );
+					RefCountedPtr< File > sourceFile = _input.m_sourceExplorer->ReadFile( sourceFileID );
+					RefCountedPtr< File > destinationFile = _input.m_destinationExplorer->ReadFile( destinationFileID );
 
 					if ( sourceFile != NULL && destinationFile != NULL ) {
 						TextFile sourcePlaylistFile( *sourceFile );
@@ -376,7 +376,7 @@ void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOut
 						destinationPlaylistFile.ToString( destinationPlaylistString );
 
 						if ( expectedPlaylistString != destinationPlaylistString ) {
-							RefCountedPtr< TextFile > file( new TextFile() );
+							RefCountedPtr< TextFile > file = new TextFile();
 							file->Set( TextFile::UTF_8, expectedPlaylistString );
 
 							ComparePathsOutput::DifferentFile & differentFile = _output.m_differentFiles.Add();
@@ -433,7 +433,7 @@ void FileSystem::FixMissingFolder( const ComparePathsInput & _input, const Compa
 	if ( _input.m_destinationExplorer->CreateFolder( _missingFolder.m_destinationParentFolderID, folderName, createdFolderID ) ) {
 		Printf( TEXT( "Created folder \"%s\"\n" ), createdFolderID.GetPath().AsChar() );
 
-		RefCountedPtr< Explorer > sourceFolderExplorer( _input.m_sourceExplorer->ExploreFolder( _missingFolder.m_sourceFolderID ) );
+		RefCountedPtr< Explorer > sourceFolderExplorer = _input.m_sourceExplorer->ExploreFolder( _missingFolder.m_sourceFolderID );
 
 		const Array< String > & sourceFolderNames = sourceFolderExplorer->GetFolderNames();
 		for ( unsigned int sourceFolderIndex = 0; sourceFolderIndex < sourceFolderNames.NumItems(); sourceFolderIndex++ ) {
@@ -476,7 +476,7 @@ void FileSystem::FixMissingFiles( const ComparePathsInput & _input, const Compar
 }
 
 void FileSystem::FixMissingFile( const ComparePathsInput & _input, const ComparePathsOutput::MissingFile & _missingFile ) {
-	RefCountedPtr< File > sourceFile( _input.m_sourceExplorer->ReadFile( _missingFile.m_sourceFileID ) );
+	RefCountedPtr< File > sourceFile = _input.m_sourceExplorer->ReadFile( _missingFile.m_sourceFileID );
 	if ( sourceFile != NULL ) {
 		String fileName = _missingFile.m_sourceFileID.GetPath();
 		fileName.StripPath();
@@ -497,7 +497,7 @@ void FileSystem::FixMissingFile( const ComparePathsInput & _input, const Compare
 				sourcePlaylistFile.ToString( sourcePlaylistString );
 				MusicTools::ConvertPlaylist( sourcePlaylistString, _input.m_playlistComparison, expectedPlaylistString );
 
-				RefCountedPtr< TextFile > file( new TextFile() );
+				RefCountedPtr< TextFile > file = new TextFile();
 				file->Set( TextFile::UTF_8, expectedPlaylistString );
 
 				expectedFile = file;
@@ -552,7 +552,7 @@ void FileSystem::FixDifferentFile( const ComparePathsInput & _input, const Compa
 		const wchar_t * destinationFileExtension = _differentFile.m_destinationFileID.GetPath().GetFileExtension();
 
 		if ( String::Compare( sourceFileExtension, destinationFileExtension ) == 0 ) {
-			RefCountedPtr< File > sourceFile( _input.m_sourceExplorer->ReadFile( _differentFile.m_sourceFileID ) );
+			RefCountedPtr< File > sourceFile = _input.m_sourceExplorer->ReadFile( _differentFile.m_sourceFileID );
 			if ( sourceFile != NULL ) {
 				if ( _input.m_destinationExplorer->WriteFile( _differentFile.m_destinationFileID, *sourceFile ) ) {
 					Printf( TEXT( "Updated file \"%s\"\n" ), _differentFile.m_destinationFileID.GetPath().AsChar() );
