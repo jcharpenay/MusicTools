@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Interlocked.h"
+
 class RefCounted {
 public:
 	// Constructor
@@ -17,10 +19,10 @@ public:
 #endif // _DEBUG
 
 private:
-	unsigned int m_refCount;
+	InterlockedInt m_refCount;
 
 #ifdef _DEBUG
-	static unsigned int s_numObjects;
+	static InterlockedInt s_numObjects;
 #endif // _DEBUG
 };
 
@@ -54,12 +56,10 @@ public:
 	}
 
 	// Accessors
-	const T ** operator&() const	{ return &m_ptr; }
+	T * const * operator&() const	{ return &m_ptr; }
 	T ** operator&()				{ return &m_ptr; }
-	operator const T*() const		{ return m_ptr; }
-	operator T*()					{ return m_ptr; }
-	const T * operator->() const	{ return m_ptr; }
-	T * operator->()				{ return m_ptr; }
+	operator T*() const				{ return m_ptr; }
+	T * operator->() const			{ return m_ptr; }
 
 protected:
 	T * m_ptr;

@@ -3,6 +3,7 @@
 #include "Console.h"
 #include "File.h"
 #include "FileSystem.h"
+#include "IOThread.h"
 #include "MusicTools.h"
 #include "RefCounted.h"
 #include "String.h"
@@ -57,9 +58,20 @@ int wmain( int argc, wchar_t * argv[] ) {
 				}
 
 				MusicTools::PrintMusicAndPlaylists( destinationMusicExplorer, destinationPlaylistsExplorer, destinationMusicExtension, destinationPlaylistExtension );
+
+				if ( destinationMusicExtension.IsEmpty() ) {
+					destinationMusicExtension = sourceMusicExtension;
+				}
+
+				if ( destinationPlaylistExtension.IsEmpty() ) {
+					destinationPlaylistExtension = sourcePlaylistExtension;
+				}
 			}
 
 			if ( sourceMusicExplorer != NULL && destinationMusicExplorer != NULL ) {
+				FileSystem::IOThread destinationIOThread( *destinationMusicExplorer, true, 200 * 1024 * 1024 );
+				destinationIOThread.SetThreadName( "Destination IO Thread" );
+
 				// Ask for music comparison
 				if ( Console::AskBool( TEXT( "Compare music? (y/n) " ) ) ) {
 					// Ask for audio file tag comparison
@@ -85,20 +97,23 @@ int wmain( int argc, wchar_t * argv[] ) {
 					if ( !( compareMusicOutput.m_missingFolders.IsEmpty() && compareMusicOutput.m_missingFiles.IsEmpty() )
 						&& sourceMusicExtension == destinationMusicExtension
 						&& Console::AskBool( TEXT( "Fix missing files & folders? (y/n) " ) ) ) {
-						FileSystem::FixMissingFolders( compareMusicInput, compareMusicOutput );
-						FileSystem::FixMissingFiles( compareMusicInput, compareMusicOutput );
+						FileSystem::FixMissingFolders( compareMusicInput, compareMusicOutput, destinationIOThread );
+						FileSystem::FixMissingFiles( compareMusicInput, compareMusicOutput, destinationIOThread );
+						destinationIOThread.WaitTaskCompletion();
 					}
 
 					if ( !( compareMusicOutput.m_extraFolders.IsEmpty() && compareMusicOutput.m_extraFiles.IsEmpty() )
 						&& Console::AskBool( TEXT( "Delete extra files & folders? (y/n) " ) ) ) {
-						FileSystem::FixExtraFolders( compareMusicInput, compareMusicOutput );
-						FileSystem::FixExtraFiles( compareMusicInput, compareMusicOutput );
+						FileSystem::FixExtraFolders( compareMusicInput, compareMusicOutput, destinationIOThread );
+						FileSystem::FixExtraFiles( compareMusicInput, compareMusicOutput, destinationIOThread );
+						destinationIOThread.WaitTaskCompletion();
 					}
 
 					if ( !compareMusicOutput.m_differentFiles.IsEmpty()
 						&& sourceMusicExtension == destinationMusicExtension
 						&& Console::AskBool( TEXT( "Fix different files? (y/n) " ) ) ) {
-						FileSystem::FixDifferentFiles( compareMusicInput, compareMusicOutput );
+						FileSystem::FixDifferentFiles( compareMusicInput, compareMusicOutput, destinationIOThread );
+						destinationIOThread.WaitTaskCompletion();
 					}
 				}
 
@@ -130,23 +145,28 @@ int wmain( int argc, wchar_t * argv[] ) {
 						// Ask for action
 						if ( !comparePlaylistsOutput.m_missingFiles.IsEmpty()
 							&& Console::AskBool( TEXT( "Fix missing files? (y/n) " ) ) ) {
-							FileSystem::FixMissingFiles( comparePlaylistsInput, comparePlaylistsOutput );
+							FileSystem::FixMissingFiles( comparePlaylistsInput, comparePlaylistsOutput, destinationIOThread );
+							destinationIOThread.WaitTaskCompletion();
 						}
 
 						if ( !comparePlaylistsOutput.m_extraFiles.IsEmpty()
 							&& Console::AskBool( TEXT( "Delete extra files? (y/n) " ) ) ) {
-							FileSystem::FixExtraFiles( comparePlaylistsInput, comparePlaylistsOutput );
+							FileSystem::FixExtraFiles( comparePlaylistsInput, comparePlaylistsOutput, destinationIOThread );
+							destinationIOThread.WaitTaskCompletion();
 						}
 
 						if ( !comparePlaylistsOutput.m_differentFiles.IsEmpty()
 							&& Console::AskBool( TEXT( "Fix different files? (y/n) " ) ) ) {
-							FileSystem::FixDifferentFiles( comparePlaylistsInput, comparePlaylistsOutput );
+							FileSystem::FixDifferentFiles( comparePlaylistsInput, comparePlaylistsOutput, destinationIOThread );
+							destinationIOThread.WaitTaskCompletion();
 						}
 					} else {
 						// Nothing else to display, directly exit
 						pause = false;
 					}
 				}
+
+				destinationIOThread.StopThread( true );
 			}
 		}
 

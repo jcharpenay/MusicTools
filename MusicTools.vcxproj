@@ -164,6 +164,7 @@
     <ClCompile Include="DriveExplorer.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="FileSystem.cpp" />
+    <ClCompile Include="Interlocked.cpp" />
     <ClCompile Include="Lock.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MusicTools.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="RefCounted.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="Thread.cpp" />
+    <ClCompile Include="IOThread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Array.h" />
@@ -179,6 +181,7 @@
     <ClInclude Include="DriveExplorer.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="Interlocked.h" />
     <ClInclude Include="Lock.h" />
     <ClInclude Include="MusicTools.h" />
     <ClInclude Include="PortableDeviceExplorer.h" />
@@ -187,6 +190,7 @@
     <ClInclude Include="Sort.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="Thread.h" />
+    <ClInclude Include="IOThread.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Array.inl" />

@@ -7,6 +7,8 @@
 class File;
 
 namespace FileSystem {
+	class IOThread;
+
 	class Drive {
 	public:
 		String	m_path;
@@ -167,14 +169,14 @@ namespace FileSystem {
 	void PrintPortableDevices( const Array< PortableDevice > & _devices );
 
 	void ComparePaths( const ComparePathsInput & _input, ComparePathsOutput & _output );
-	void FixMissingFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output );
-	void FixMissingFolder( const ComparePathsInput & _input, const ComparePathsOutput::MissingFolder & _missingFolder );
-	void FixExtraFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output );
-	void FixMissingFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output );
-	void FixMissingFile( const ComparePathsInput & _input, const ComparePathsOutput::MissingFile & _missingFile );
-	void FixExtraFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output );
-	void FixDifferentFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output );
-	void FixDifferentFile( const ComparePathsInput & _input, const ComparePathsOutput::DifferentFile & _differentFile );
+	void FixMissingFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread );
+	void FixMissingFolder( const ComparePathsInput & _input, const ComparePathsOutput::MissingFolder & _missingFolder, IOThread & _destinationIOThread );
+	void FixExtraFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread );
+	void FixMissingFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread );
+	void FixMissingFile( const ComparePathsInput & _input, const ComparePathsOutput::MissingFile & _missingFile, IOThread & _destinationIOThread );
+	void FixExtraFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread );
+	void FixDifferentFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread );
+	void FixDifferentFile( const ComparePathsInput & _input, const ComparePathsOutput::DifferentFile & _differentFile, IOThread & _destinationIOThread );
 
 	bool IsAudioFile( const wchar_t * _extension );
 	bool IsPlaylistFile( const wchar_t * _extension );

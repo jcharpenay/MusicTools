@@ -2,29 +2,29 @@
 #include "RefCounted.h"
 
 #ifdef _DEBUG
-	unsigned int RefCounted::s_numObjects = 0;
+	InterlockedInt RefCounted::s_numObjects;
 #endif // _DEBUG
 
-RefCounted::RefCounted() : m_refCount( 0 ) {
+RefCounted::RefCounted() {
 #ifdef _DEBUG
-	s_numObjects++;
+	s_numObjects.Increment();
 #endif // _DEBUG
 }
 
 RefCounted::~RefCounted() {
 	DEBUG_ASSERT( m_refCount == 0 );
 #ifdef _DEBUG
-	s_numObjects--;
+	s_numObjects.Decrement();
 #endif // _DEBUG
 }
 
 void RefCounted::AddRef() {
-	m_refCount++;
+	m_refCount.Increment();
 }
 
 void RefCounted::Release() {
 	DEBUG_ASSERT( m_refCount > 0 );
-	if ( --m_refCount == 0 ) {
+	if ( m_refCount.Decrement() == 0 ) {
 		delete this;
 	}
 }

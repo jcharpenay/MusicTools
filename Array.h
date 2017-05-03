@@ -17,6 +17,7 @@ public:
 	T & Add();
 	T & Add( const T & _item );
 	bool Remove( const T & _item );
+	bool RemoveIndex( unsigned int _index );
 	void Clear();
 	void Sort( SortBase< T > & _sort = QuickSort< T >() );
 

@@ -53,6 +53,12 @@
     <ClCompile Include="Lock.cpp">
       <Filter>Fichiers\Base</Filter>
     </ClCompile>
+    <ClCompile Include="IOThread.cpp">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Interlocked.cpp">
+      <Filter>Fichiers\Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precompiled.h">
@@ -95,6 +101,12 @@
       <Filter>Fichiers\Base</Filter>
     </ClInclude>
     <ClInclude Include="Lock.h">
+      <Filter>Fichiers\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="IOThread.h">
+      <Filter>Fichiers\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Interlocked.h">
       <Filter>Fichiers\Base</Filter>
     </ClInclude>
   </ItemGroup>

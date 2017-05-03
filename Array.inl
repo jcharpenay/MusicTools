@@ -37,12 +37,19 @@ template< class T > T & Array< T >::Add( const T & _item ) {
 template< class T > bool Array< T >::Remove( const T & _item ) {
 	for ( unsigned int index = 0; index < m_num; index++ ) {
 		if ( m_data[ index ] == _item ) {
-			for ( index++; index < m_num; index++ ) {
-				m_data[ index - 1 ] = m_data[ index ];
-			}
-			m_num--;
-			return true;
+			return RemoveIndex( index );
 		}
+	}
+	return false;
+}
+
+template< class T > bool Array< T >::RemoveIndex( unsigned int _index ) {
+	if ( _index < m_num ) {
+		for ( unsigned int index = _index + 1; index < m_num; index++ ) {
+			m_data[ index - 1 ] = m_data[ index ];
+		}
+		m_num--;
+		return true;
 	}
 	return false;
 }

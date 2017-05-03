@@ -2,6 +2,7 @@
 #include "Console.h"
 #include "File.h"
 #include "FileSystem.h"
+#include "IOThread.h"
 #include "MusicTools.h"
 
 bool FileSystem::AudioFileTags::operator==( const AudioFileTags & _other ) const {
@@ -418,17 +419,19 @@ void FileSystem::ComparePaths( const ComparePathsInput & _input, ComparePathsOut
 	}
 }
 
-void FileSystem::FixMissingFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output ) {
+void FileSystem::FixMissingFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread ) {
 	for ( unsigned int index = 0; index < _output.m_missingFolders.NumItems(); index++ ) {
 		const ComparePathsOutput::MissingFolder & missingFolder = _output.m_missingFolders[ index ];
-		FixMissingFolder( _input, missingFolder );
+		FixMissingFolder( _input, missingFolder, _destinationIOThread );
 	}
 }
 
-void FileSystem::FixMissingFolder( const ComparePathsInput & _input, const ComparePathsOutput::MissingFolder & _missingFolder ) {
+void FileSystem::FixMissingFolder( const ComparePathsInput & _input, const ComparePathsOutput::MissingFolder & _missingFolder, IOThread & _destinationIOThread ) {
 	String folderName = _missingFolder.m_sourceFolderID.GetPath();
 	folderName.StripPath();
 
+	_destinationIOThread.WaitTaskCompletion();
+	
 	FolderID createdFolderID;
 	if ( _input.m_destinationExplorer->CreateFolder( _missingFolder.m_destinationParentFolderID, folderName, createdFolderID ) ) {
 		Printf( TEXT( "Created folder \"%s\"\n" ), createdFolderID.GetPath().AsChar() );
@@ -441,7 +444,7 @@ void FileSystem::FixMissingFolder( const ComparePathsInput & _input, const Compa
 			sourceFolderExplorer->GetFolderID( sourceFolderIndex, missingFolder.m_sourceFolderID );
 			missingFolder.m_destinationParentFolderID = createdFolderID;
 
-			FixMissingFolder( _input, missingFolder );
+			FixMissingFolder( _input, missingFolder, _destinationIOThread );
 		}
 
 		const Array< String > & sourceFileNames = sourceFolderExplorer->GetFileNames();
@@ -450,32 +453,28 @@ void FileSystem::FixMissingFolder( const ComparePathsInput & _input, const Compa
 			sourceFolderExplorer->GetFileID( sourceFileIndex, missingFile.m_sourceFileID );
 			missingFile.m_destinationParentFolderID = createdFolderID;
 
-			FixMissingFile( _input, missingFile );
+			FixMissingFile( _input, missingFile, _destinationIOThread );
 		}
 	} else {
 		Printf( TEXT( "Couldn't create folder \"%s\"\n" ), folderName.AsChar() );
 	}
 }
 
-void FileSystem::FixExtraFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output ) {
+void FileSystem::FixExtraFolders( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread ) {
 	for ( unsigned int index = 0; index < _output.m_extraFolders.NumItems(); index++ ) {
 		const FolderID & folderID = _output.m_extraFolders[ index ];
-		if ( _input.m_destinationExplorer->DeleteFolder( folderID ) ) {
-			Printf( TEXT( "Deleted folder \"%s\"\n" ), folderID.GetPath().AsChar() );
-		} else {
-			Printf( TEXT( "Couldn't delete folder \"%s\"\n" ), folderID.GetPath().AsChar() );
-		}
+		_destinationIOThread.DeleteFolder( folderID );
 	}
 }
 
-void FileSystem::FixMissingFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output ) {
+void FileSystem::FixMissingFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread ) {
 	for ( unsigned int index = 0; index < _output.m_missingFiles.NumItems(); index++ ) {
 		const ComparePathsOutput::MissingFile & missingFile = _output.m_missingFiles[ index ];
-		FixMissingFile( _input, missingFile );
+		FixMissingFile( _input, missingFile, _destinationIOThread );
 	}
 }
 
-void FileSystem::FixMissingFile( const ComparePathsInput & _input, const ComparePathsOutput::MissingFile & _missingFile ) {
+void FileSystem::FixMissingFile( const ComparePathsInput & _input, const ComparePathsOutput::MissingFile & _missingFile, IOThread & _destinationIOThread ) {
 	RefCountedPtr< File > sourceFile = _input.m_sourceExplorer->ReadFile( _missingFile.m_sourceFileID );
 	if ( sourceFile != NULL ) {
 		String fileName = _missingFile.m_sourceFileID.GetPath();
@@ -507,46 +506,30 @@ void FileSystem::FixMissingFile( const ComparePathsInput & _input, const Compare
 			}
 		}
 
-		FileID createdFileID;
-		if ( _input.m_destinationExplorer->CreateFile( _missingFile.m_destinationParentFolderID, fileName, *expectedFile, createdFileID ) ) {
-			Printf( TEXT( "Created file \"%s\"\n" ), createdFileID.GetPath().AsChar() );
-
-			if ( _input.m_sourceExplorer->IsFileReadOnly( _missingFile.m_sourceFileID ) ) {
-				_input.m_destinationExplorer->SetFileReadOnly( createdFileID, true );
-			}
-		} else {
-			Printf( TEXT( "Couldn't create file \"%s\"\n" ), fileName.AsChar() );
-		}
+		const bool isReadOnly = _input.m_sourceExplorer->IsFileReadOnly( _missingFile.m_sourceFileID );
+		_destinationIOThread.CreateFile( _missingFile.m_destinationParentFolderID, fileName, *expectedFile, isReadOnly );
 	} else {
 		Printf( TEXT( "Couldn't read file \"%s\"\n" ), _missingFile.m_sourceFileID.GetPath().AsChar() );
 	}
 }
 
-void FileSystem::FixExtraFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output ) {
+void FileSystem::FixExtraFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread ) {
 	for ( unsigned int index = 0; index < _output.m_extraFiles.NumItems(); index++ ) {
 		const FileID & fileID = _output.m_extraFiles[ index ];
-		if ( _input.m_destinationExplorer->DeleteFile( fileID ) ) {
-			Printf( TEXT( "Deleted file \"%s\"\n" ), fileID.GetPath().AsChar() );
-		} else {
-			Printf( TEXT( "Couldn't delete file \"%s\"\n" ), fileID.GetPath().AsChar() );
-		}
+		_destinationIOThread.DeleteFile( fileID );
 	}
 }
 
-void FileSystem::FixDifferentFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output ) {
+void FileSystem::FixDifferentFiles( const ComparePathsInput & _input, const ComparePathsOutput & _output, IOThread & _destinationIOThread ) {
 	for ( unsigned int index = 0; index < _output.m_differentFiles.NumItems(); index++ ) {
 		const ComparePathsOutput::DifferentFile & differentFile = _output.m_differentFiles[ index ];
-		FixDifferentFile( _input, differentFile );
+		FixDifferentFile( _input, differentFile, _destinationIOThread );
 	}
 }
 
-void FileSystem::FixDifferentFile( const ComparePathsInput & _input, const ComparePathsOutput::DifferentFile & _differentFile ) {
+void FileSystem::FixDifferentFile( const ComparePathsInput & _input, const ComparePathsOutput::DifferentFile & _differentFile, IOThread & _destinationIOThread ) {
 	if ( _differentFile.m_expectedFile != NULL ) {
-		if ( _input.m_destinationExplorer->WriteFile( _differentFile.m_destinationFileID, *_differentFile.m_expectedFile ) ) {
-			Printf( TEXT( "Updated file \"%s\"\n" ), _differentFile.m_destinationFileID.GetPath().AsChar() );
-		} else {
-			Printf( TEXT( "Couldn't write file \"%s\"\n" ), _differentFile.m_destinationFileID.GetPath().AsChar() );
-		}
+		_destinationIOThread.WriteFile( _differentFile.m_destinationFileID, *_differentFile.m_expectedFile );
 	} else {
 		const wchar_t * sourceFileExtension = _differentFile.m_sourceFileID.GetPath().GetFileExtension();
 		const wchar_t * destinationFileExtension = _differentFile.m_destinationFileID.GetPath().GetFileExtension();
@@ -554,11 +537,7 @@ void FileSystem::FixDifferentFile( const ComparePathsInput & _input, const Compa
 		if ( String::Compare( sourceFileExtension, destinationFileExtension ) == 0 ) {
 			RefCountedPtr< File > sourceFile = _input.m_sourceExplorer->ReadFile( _differentFile.m_sourceFileID );
 			if ( sourceFile != NULL ) {
-				if ( _input.m_destinationExplorer->WriteFile( _differentFile.m_destinationFileID, *sourceFile ) ) {
-					Printf( TEXT( "Updated file \"%s\"\n" ), _differentFile.m_destinationFileID.GetPath().AsChar() );
-				} else {
-					Printf( TEXT( "Couldn't write file \"%s\"\n" ), _differentFile.m_destinationFileID.GetPath().AsChar() );
-				}
+				_destinationIOThread.WriteFile( _differentFile.m_destinationFileID, *sourceFile );
 			} else {
 				Printf( TEXT( "Couldn't read file \"%s\"\n" ), _differentFile.m_sourceFileID.GetPath().AsChar() );
 			}
@@ -568,7 +547,7 @@ void FileSystem::FixDifferentFile( const ComparePathsInput & _input, const Compa
 	}
 
 	const bool isReadOnly = _input.m_sourceExplorer->IsFileReadOnly( _differentFile.m_sourceFileID );
-	_input.m_destinationExplorer->SetFileReadOnly( _differentFile.m_destinationFileID, isReadOnly );
+	_destinationIOThread.SetFileReadOnly( _differentFile.m_destinationFileID, isReadOnly );
 }
 
 bool FileSystem::IsAudioFile( const wchar_t * _extension ) {

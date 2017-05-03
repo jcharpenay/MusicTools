@@ -1,12 +1,18 @@
 #include "Precompiled.h"
 #include "Thread.h"
 
-Thread::Thread() : m_threadHandle( NULL ), m_threadID( 0 ) {
+Thread::Thread() : m_threadHandle( NULL ), m_threadID( 0 ), m_shouldStopThread( false ) {
 	m_threadHandle = CreateThread( NULL, 0, RunThread, this, 0, &m_threadID );
 }
 
 Thread::~Thread() {
-	Wait();
+#ifdef _DEBUG
+	DWORD exitCode;
+	if ( GetExitCodeThread( m_threadHandle, &exitCode ) != 0 ) {
+		// Forgot to call StopThread( true ) or WaitThread()?
+		DEBUG_ASSERT( exitCode != STILL_ACTIVE );
+	}
+#endif // _DEBUG
 	CloseHandle( m_threadHandle );
 }
 
@@ -36,7 +42,14 @@ void Thread::SetThreadName( const char * _name ) {
 #endif // _DEBUG
 }
 
-void Thread::Wait() {
+void Thread::StopThread( bool _wait ) {
+	m_shouldStopThread = true;
+	if ( _wait ) {
+		WaitThread();
+	}
+}
+
+void Thread::WaitThread() {
 	WaitForSingleObject( m_threadHandle, INFINITE );
 }
 

@@ -26,7 +26,7 @@ void Buffer::EnsureAllocated( unsigned int _size ) {
 
 void Buffer::Resize( unsigned int _size ) {
 #ifdef _DEBUG
-	if ( _size > 100 * 1024 * 1024 ) {
+	if ( _size > 500 * 1024 * 1024 ) {
 		DebugBreak();
 	}
 #endif // DEBUG

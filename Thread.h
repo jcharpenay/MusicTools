@@ -10,7 +10,11 @@ public:
 
 	// Operations
 	void SetThreadName( const char * _name );
-	void Wait();
+	void StopThread( bool _wait );
+	void WaitThread();
+	
+	// Accessors
+	bool ShouldStopThread() const { return m_shouldStopThread; }
 
 protected:
 	virtual void Run() = 0;
@@ -18,6 +22,7 @@ protected:
 private:
 	HANDLE	m_threadHandle;
 	DWORD	m_threadID;
+	bool	m_shouldStopThread;
 
 	static DWORD WINAPI RunThread( void * _param );
 };
