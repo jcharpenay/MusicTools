@@ -12,12 +12,13 @@ public:
 	void SetThreadName( const char * _name );
 	void StopThread( bool _wait );
 	void WaitThread();
-	
+
 	// Accessors
 	bool ShouldStopThread() const { return m_shouldStopThread; }
 
 protected:
 	virtual void Run() = 0;
+	virtual void StopThreadRequested() {}
 
 private:
 	HANDLE	m_threadHandle;

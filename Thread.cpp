@@ -44,6 +44,8 @@ void Thread::SetThreadName( const char * _name ) {
 
 void Thread::StopThread( bool _wait ) {
 	m_shouldStopThread = true;
+	StopThreadRequested();
+
 	if ( _wait ) {
 		WaitThread();
 	}

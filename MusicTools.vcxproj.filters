@@ -59,6 +59,9 @@
     <ClCompile Include="Interlocked.cpp">
       <Filter>Fichiers\Base</Filter>
     </ClCompile>
+    <ClCompile Include="Event.cpp">
+      <Filter>Fichiers\Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precompiled.h">
@@ -107,6 +110,9 @@
       <Filter>Fichiers\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="Interlocked.h">
+      <Filter>Fichiers\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.h">
       <Filter>Fichiers\Base</Filter>
     </ClInclude>
   </ItemGroup>

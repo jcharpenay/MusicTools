@@ -162,6 +162,7 @@
     <ClCompile Include="Buffer.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="DriveExplorer.cpp" />
+    <ClCompile Include="Event.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="Interlocked.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="DriveExplorer.h" />
+    <ClInclude Include="Event.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="Interlocked.h" />

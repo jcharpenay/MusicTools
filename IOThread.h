@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Array.h"
+#include "Event.h"
 #include "File.h"
 #include "FileSystem.h"
 #include "Interlocked.h"
@@ -26,6 +27,7 @@ namespace FileSystem {
 
 	protected:
 		virtual void Run() override;
+		virtual void StopThreadRequested() override;
 
 	private:
 		class Task {
@@ -103,6 +105,8 @@ namespace FileSystem {
 		Array< Task * >		m_tasks;
 		InterlockedInt64	m_tasksDataSize;
 		int64_t				m_tasksMaxDataSize;
+		Event				m_tasksCompleted;
+		Event				m_wakeUp;
 
 		void AddTask( Task * _task );
 		Task * GetCurrentTask();

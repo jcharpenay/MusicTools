@@ -5,7 +5,9 @@
 FileSystem::IOThread::IOThread( Explorer & _explorer, bool _verbose, int64_t _tasksMaxDataSize ) :
 	m_explorer( &_explorer ),
 	m_verbose( _verbose ),
-	m_tasksMaxDataSize( _tasksMaxDataSize ) {
+	m_tasksMaxDataSize( _tasksMaxDataSize ),
+	m_tasksCompleted( Event::MANUAL_RESET, Event::SET ),
+	m_wakeUp( Event::AUTO_RESET, Event::NOT_SET ) {
 }
 
 void FileSystem::IOThread::CreateFolder( const FolderID & _parentFolderID, const String & _folderName ) {
@@ -33,16 +35,7 @@ void FileSystem::IOThread::SetFileReadOnly( const FileID & _fileID, bool _readOn
 }
 
 void FileSystem::IOThread::WaitTaskCompletion() {
-	for ( ;; ) {
-		{
-			ScopedLock< SpinLock > scopedLock( m_tasksLock );
-			if ( m_tasks.IsEmpty() ) {
-				break;
-			}
-		}
-
-		Sleep( 0 );
-	}
+	m_tasksCompleted.Wait();
 }
 
 void FileSystem::IOThread::Run() {
@@ -52,9 +45,13 @@ void FileSystem::IOThread::Run() {
 			task->Run( *m_explorer, m_verbose );
 			CurrentTaskCompleted();
 		} else {
-			Sleep( 0 );
+			m_wakeUp.Wait();
 		}
 	}
+}
+
+void FileSystem::IOThread::StopThreadRequested() {
+	m_wakeUp.Trigger();
 }
 
 FileSystem::IOThread::CreateFolderTask::CreateFolderTask( const FolderID & _parentFolderID, const String & _folderName ) :
@@ -169,6 +166,8 @@ void FileSystem::IOThread::AddTask( Task * _task ) {
 	ScopedLock< SpinLock > scopedLock( m_tasksLock );
 	m_tasks.Add( _task );
 	m_tasksDataSize.Add( _task->DataSize() );
+	m_tasksCompleted.Reset();
+	m_wakeUp.Trigger();
 }
 
 FileSystem::IOThread::Task * FileSystem::IOThread::GetCurrentTask() {
@@ -187,6 +186,10 @@ void FileSystem::IOThread::CurrentTaskCompleted() {
 		task = m_tasks.First();
 		m_tasks.RemoveIndex( 0 );
 		m_tasksDataSize.Add( -task->DataSize() );
+
+		if ( m_tasks.IsEmpty() ) {
+			m_tasksCompleted.Trigger();
+		}
 	}
 	delete task;
 }
