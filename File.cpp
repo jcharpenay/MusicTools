@@ -120,7 +120,10 @@ bool TextFile::ToString( String & _string ) const {
 	switch ( m_encoding ) {
 		case ANSI:
 		case UTF_8: {
-			const unsigned int length = m_buffer->Size() - 3;
+			unsigned int length = m_buffer->Size();
+			if ( m_encoding == UTF_8 ) {
+				length -= 3;
+			}
 			if ( length > 0 ) {
 				_string.EnsureAllocated( length + 1 );
 				const int returnedLength = MultiByteToWideChar( m_encoding == ANSI ? CP_ACP : CP_UTF8, 0, m_str, length, _string, length );
