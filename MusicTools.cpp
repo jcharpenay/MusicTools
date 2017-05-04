@@ -118,6 +118,11 @@ void MusicTools::FindMusicAndPlaylists( const RefCountedPtr< FileSystem::Explore
 			current = current->ExploreFolder( nextFolderID );
 		}
 	} while ( nextFolderID.IsValid() );
+
+	// If no playlist folder is found use the music folder
+	if ( _playlistExtension.IsEmpty() ) {
+		_playlistExplorer = _musicExplorer;
+	}
 }
 
 void MusicTools::PrintMusicAndPlaylists( const FileSystem::Explorer * _musicExplorer, const FileSystem::Explorer * _playlistExplorer, const String & _musicExtension, const String & _playlistExtension ) {
