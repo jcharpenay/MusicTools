@@ -4,6 +4,8 @@
 #include "DriveExplorer.h"
 #include "File.h"
 
+//#define SIMULATE_RW
+
 FileSystem::DriveExplorer::DriveExplorer( const Drive & _drive ) {
 	m_path = _drive.m_path;
 	ExplorePath( m_path, m_folderNames, m_fileNames );
@@ -47,12 +49,17 @@ bool FileSystem::DriveExplorer::CreateFolder( const FolderID & _parentFolderID, 
 		String path = _parentFolderID.GetPath();
 		path.AddPath( _folderName );
 
+#ifdef SIMULATE_RW
+		_folderID.Set( path );
+		succeeded = true;
+#else
 		if ( CreateDirectory( path, NULL ) != 0 ) {
 			_folderID.Set( path );
 			succeeded = true;
 		} else {
 			Printf( TEXT( "CreateDirectory failed: %u\n" ), GetLastError() );
 		}
+#endif // SIMULATE_RW
 	}
 
 	return succeeded;
@@ -61,6 +68,9 @@ bool FileSystem::DriveExplorer::CreateFolder( const FolderID & _parentFolderID, 
 bool FileSystem::DriveExplorer::DeleteFolder( const FolderID & _folderID ) const {
 	bool succeeded = false;
 	if ( _folderID.IsValid() ) {
+#ifdef SIMULATE_RW
+		succeeded = true;
+#else
 		const String & path = _folderID.GetPath();
 		String doubleNullTerminatedPath;
 
@@ -80,6 +90,7 @@ bool FileSystem::DriveExplorer::DeleteFolder( const FolderID & _folderID ) const
 		};
 
 		succeeded = ( SHFileOperation( &fileOp ) == 0 );
+#endif // SIMULATE_RW
 	}
 
 	return succeeded;
@@ -88,6 +99,9 @@ bool FileSystem::DriveExplorer::DeleteFolder( const FolderID & _folderID ) const
 File * FileSystem::DriveExplorer::ReadFile( const FileID & _fileID ) const {
 	File * file = NULL;
 	if ( _fileID.IsValid() ) {
+#ifdef SIMULATE_RW
+		file = new File();
+#else
 		HANDLE hFile = ::CreateFile( _fileID.GetPath(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 		if ( hFile != INVALID_HANDLE_VALUE ) {
 			const DWORD size = GetFileSize( hFile, NULL );
@@ -108,6 +122,7 @@ File * FileSystem::DriveExplorer::ReadFile( const FileID & _fileID ) const {
 		} else {
 			Printf( TEXT( "CreateFile failed: %u\n" ), GetLastError() );
 		}
+#endif // SIMULATE_RW
 	}
 
 	return file;
@@ -131,6 +146,9 @@ bool FileSystem::DriveExplorer::CreateFile( const FolderID & _parentFolderID, co
 bool FileSystem::DriveExplorer::WriteFile( const FileID & _fileID, const File & _file ) const {
 	bool succeeded = false;
 	if ( _fileID.IsValid() ) {
+#ifdef SIMULATE_RW
+		succeeded = true;
+#else
 		HANDLE hFile = ::CreateFile( _fileID.GetPath(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 		if ( hFile != INVALID_HANDLE_VALUE ) {
 			const Buffer & buffer = _file.GetBuffer();
@@ -144,6 +162,7 @@ bool FileSystem::DriveExplorer::WriteFile( const FileID & _fileID, const File & 
 		} else {
 			Printf( TEXT( "CreateFile failed: %u\n" ), GetLastError() );
 		}
+#endif // SIMULATE_RW
 	}
 
 	return succeeded;
@@ -152,11 +171,15 @@ bool FileSystem::DriveExplorer::WriteFile( const FileID & _fileID, const File & 
 bool FileSystem::DriveExplorer::DeleteFile( const FileID & _fileID ) const {
 	bool succeeded = false;
 	if ( _fileID.IsValid() ) {
+#ifdef SIMULATE_RW
+		succeeded = true;
+#else
 		if ( ::DeleteFile( _fileID.GetPath() ) != 0 ) {
 			succeeded = true;
 		} else {
 			Printf( TEXT( "DeleteFile failed: %u\n" ), GetLastError() );
 		}
+#endif // SIMULATE_RW
 	}
 
 	return succeeded;
@@ -169,19 +192,24 @@ bool FileSystem::DriveExplorer::IsFileReadOnly( const FileID & _fileID ) const {
 }
 
 bool FileSystem::DriveExplorer::SetFileReadOnly( const FileID & _fileID, bool _readOnly ) const {
-	DWORD attributes = GetFileAttributes( _fileID.GetPath() );
 	bool succeeded = false;
-
-	if ( _readOnly ) {
-		attributes |= FILE_ATTRIBUTE_READONLY;
-	} else {
-		attributes &= ~FILE_ATTRIBUTE_READONLY;
-	}
-
-	if ( SetFileAttributes( _fileID.GetPath(), attributes ) != 0 ) {
+	if ( _fileID.IsValid() ) {
+#ifdef SIMULATE_RW
 		succeeded = true;
-	} else {
-		Printf( TEXT( "SetFileAttributes failed: %u\n" ), GetLastError() );
+#else
+		DWORD attributes = GetFileAttributes( _fileID.GetPath() );
+		if ( _readOnly ) {
+			attributes |= FILE_ATTRIBUTE_READONLY;
+		} else {
+			attributes &= ~FILE_ATTRIBUTE_READONLY;
+		}
+
+		if ( SetFileAttributes( _fileID.GetPath(), attributes ) != 0 ) {
+			succeeded = true;
+		} else {
+			Printf( TEXT( "SetFileAttributes failed: %u\n" ), GetLastError() );
+		}
+#endif // SIMULATE_RW
 	}
 
 	return succeeded;
@@ -190,6 +218,9 @@ bool FileSystem::DriveExplorer::SetFileReadOnly( const FileID & _fileID, bool _r
 bool FileSystem::DriveExplorer::FetchAudioFileTags( const FileID & _fileID, AudioFileTags & _tags ) const {
 #ifdef USE_TAGLIB
 	if ( _fileID.IsValid() ) {
+#ifdef SIMULATE_RW
+		return true;
+#else
 		TagLib::FileRef fileRef( TagLib::FileName( _fileID.GetPath() ), false, TagLib::AudioProperties::Fast );
 		TagLib::Tag * fileTag = fileRef.tag();
 
@@ -204,6 +235,7 @@ bool FileSystem::DriveExplorer::FetchAudioFileTags( const FileID & _fileID, Audi
 
 			return true;
 		}
+#endif // SIMULATE_RW
 	}
 #endif // USE_TAGLIB
 	return false;
